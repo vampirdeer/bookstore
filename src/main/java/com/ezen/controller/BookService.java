@@ -1,7 +1,10 @@
 package com.ezen.controller;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +23,7 @@ public class BookService {
 	private HttpServletRequest request;
 	private HttpServletResponse response;
 	private final String path="/WEB-INF/views/book/";
+	private final String uploadPath="d:/upload/img";
 
 	public BookService(HttpServletRequest request, HttpServletResponse response) {
 		this.request=request;this.response=response;
@@ -34,6 +38,81 @@ public class BookService {
 			return BookViewService();
 		}else if(cmd.equals("new")) {
 			return BookNewService();
+		}else if(cmd.equals("edit")) {
+			return BookUpdateService();
+		}else if(cmd.equals("imgDown")) {
+			return BookImgDownService();
+		}
+		return null;
+	}
+
+	private String BookImgDownService() throws IOException {
+		System.out.println("BookImgDownService");
+		// 파라메타값 받아오기
+		String originFname=request.getParameter("originFname");//원본파일명
+		String upload=request.getParameter("upload");//경로
+		String saveFname=request.getParameter("saveFname");//저장된 파일명
+		String filename=upload+"/"+saveFname;
+		System.out.println("filename="+filename);
+		//웹브라우저의 종류 확인
+		String agent=request.getHeader("User-Agent");
+		System.out.println(agent);
+		// ie 7 또는 edge
+		boolean ieBrowser=(agent.indexOf("Trident")>-1)||(agent.indexOf("Edge")>-1);
+		if(ieBrowser) {
+			originFname=URLEncoder.encode(originFname,"utf-8").replace("\\","%20");
+		}else {// edge, 파이어폭스, 크롬
+			originFname=new String(originFname.getBytes("utf-8"),"iso-8859-1");
+		}
+		response.setContentType("image/jpg");
+		//다운로드 되는 파일명 설정
+		response.setHeader("Content-Disposition", "attachment;filename="+originFname);
+		FileInputStream in=new FileInputStream(filename);//파일 open
+		//출력할 곳
+		BufferedOutputStream out=new BufferedOutputStream(response.getOutputStream());
+		int numRead;
+		byte b[]=new byte[4096];//4K만큼
+		while((numRead=in.read(b,0,b.length))!=-1) {
+			out.write(b,0,numRead);
+		}//end while
+		out.flush();//버퍼에 남은것 출력
+		in.close();
+		out.close();
+		return null;
+	}
+
+	private String BookUpdateService() throws IOException {
+		//mr 객체만 생성하면 mr안에 모든 넘어온 파라메타가 다 저정되고, 업로드 파일이 있으면 파일 저장폴더에 저장 된다
+		MultipartRequest mr=new MultipartRequest(request, uploadPath, 2*1024*1024
+				, "utf-8", new DefaultFileRenamePolicy());
+		// 넘어오는 데이터를 받아서 수정작업
+		// MultipartRequest  사용 
+		// 첨부파일 있는지 없는지 확인?? 있다면 수정, 없다면 수정 x
+		if(mr!=null) {
+			//System.out.println("mr.getOriginalFileName="+mr.getOriginalFileName("file"));
+			//System.out.println("mr.getFilesystemName="+mr.getFilesystemName("file"));
+			// BookVO 넘어온 데이터를 담고 수정작업
+			//넘어온 데이터 받기
+			//bno 받기
+			int bno=Integer.parseInt(mr.getParameter("bno"));
+			String title=mr.getParameter("title").trim();
+			String writer=mr.getParameter("writer").trim();
+			String publisher=mr.getParameter("publisher").trim();
+			String content=mr.getParameter("content").trim();
+			int price=Integer.parseInt(mr.getParameter("price"));
+			String oFileName=mr.getOriginalFileName("file");
+			//if(oFileName==null)uploadPath=null;
+			BookVO vo=new BookVO(bno,title, writer, price, publisher
+					, content,oFileName
+					,mr.getFilesystemName("file"),uploadPath);
+			//dao 객체 만들기
+			BookDAO dao=BookDAO.getInstance();			
+			//dao 수정 메소드 호출 
+			int result=dao.updateBook(vo);
+			if(result==1) {//업데이트 완료		
+				//상세화면 bookView.jsp 여기로 보내주는 서블릿 /bView?bno
+				return "book?cmd=view&bno="+bno;				
+			}
 		}
 		return null;
 	}
@@ -44,10 +123,9 @@ public class BookService {
 			return path+"bookNew.jsp";
 		}else {//post
 			//업로드 폴더 설정
-			String uploadPath="d:/upload/img";
-			File path=new File(uploadPath);
-			if(!path.exists()) {//폴더가 없으면 폴더 만들기
-				path.mkdirs();
+			File fpath=new File(uploadPath);
+			if(!fpath.exists()) {//폴더가 없으면 폴더 만들기
+				fpath.mkdirs();
 			}
 			// MultipartRequest 객체 생성하면 파일업로드 완료
 			MultipartRequest mr=new MultipartRequest(request, uploadPath

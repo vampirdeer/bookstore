@@ -54,28 +54,30 @@ public class ScoreListAjaxServlet extends HttpServlet {
 		List<BookscoreVO> list=dao.getBookScore(page,bno,displayRow);	
 		//json 데이터를 조립해서 호출쪽으로 출력해 준다.
 		//json데이터 조립 :gson 라이브러리 사용
-		JsonObject jObj=new JsonObject();
-		jObj.addProperty("next", next);//더보기버튼 활성화
-		//list를 json array로 만들기
-		JsonArray arr=new JsonArray();
-		//json 객체 만들기
-		JsonObject data=null;
-		for(BookscoreVO vo:list) {
-			data=new JsonObject();
-			data.addProperty("score", vo.getScore());
-			data.addProperty("id", vo.getId());
-			data.addProperty("cmt", vo.getCmt());
-			arr.add(data);
+		if(list!=null) {
+			JsonObject jObj=new JsonObject();
+			jObj.addProperty("next", next);//더보기버튼 활성화
+			//list를 json array로 만들기
+			JsonArray arr=new JsonArray();
+			//json 객체 만들기
+			JsonObject data=null;
+			for(BookscoreVO vo:list) {
+				data=new JsonObject();
+				data.addProperty("score", vo.getScore());
+				data.addProperty("id", vo.getId());
+				data.addProperty("cmt", vo.getCmt());
+				arr.add(data);
+			}
+			jObj.add("arr", arr);
+			//Gson gson=new Gson();
+			//System.out.println(gson.toJson(jObj));
+			//보내기 전에 encoding
+			response.setContentType("application/json;charset=utf-8");
+			PrintWriter out=response.getWriter();
+			out.print(jObj);
+			out.flush();
+			out.close();	
 		}
-		jObj.add("arr", arr);
-		//Gson gson=new Gson();
-		//System.out.println(gson.toJson(jObj));
-		//보내기 전에 encoding
-		response.setContentType("application/json;charset=utf-8");
-		PrintWriter out=response.getWriter();
-		out.print(jObj);
-		out.flush();
-		out.close();		
 	}
 
 }

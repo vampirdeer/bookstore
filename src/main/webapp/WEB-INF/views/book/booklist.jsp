@@ -73,7 +73,7 @@
     </div>
         <!--  검색 -->
     <div id="searchdiv">	 	
-		<form action="book?cmd=list" method="get">
+		<form action="book?cmd=list" method="post">
 	        <select name="searchtype" id="searchtype">
 	            <option value="title" checked>도서명</option>
 	            <option value="writer">저자명</option>
@@ -82,7 +82,7 @@
 	        <input type="text" size="20" name="searchword" id="searchword" >
 	        <button onclick="return searchFun()">검 색</button> &nbsp;	        
 	    </form>		
-	    <!-- <a href="book?cmd=list"><button>전체도서검색</button></a> -->
+
  	</div>		
  </main>
 <script type="text/javascript">

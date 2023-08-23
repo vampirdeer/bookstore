@@ -1,4 +1,3 @@
-
 <%@page import="com.ezen.book.BookVO"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
@@ -22,7 +21,7 @@
 </style>
 <main>
 <h2>도서 상세</h2>
-<form action="bEdit" method="post"  enctype="multipart/form-data" id="uploadForm" name="uploadForm" >
+<form action="book?cmd=edit" method="post"  enctype="multipart/form-data" id="uploadForm" name="uploadForm" >
 	<input type="hidden" value="${vo.bno}" name="bno" id="bno">
 	<table class="table table-sm table-bordered">
 		<tr>
@@ -78,7 +77,7 @@
 			<th>도서 이미지</th>
 			<td class="disp" >
 				<c:if test="${vo.saveFilename!=null}">
-					<img src="imgDown?upload=${vo.savePath}&saveFname=${vo.saveFilename}&originFname=${vo.srcFilename}" alt="" height="300px">
+					<img src="book?cmd=imgDown&upload=${vo.savePath}&saveFname=${vo.saveFilename}&originFname=${vo.srcFilename}" alt="" height="300px">
 				</c:if>				
 			</td>
 			<td class="edit" style="display:none;">
@@ -128,7 +127,7 @@
 		<c:if test="${sessionScope.mvo.grade=='a'}">
 			<button type="button" id="btnEdit" onclick="bookEdit()" class="btn btn-warning" >도서수정</button>
 	 		<button type="button" id="btnDelete" onclick="bookDelete()" class="btn btn-danger" >도서삭제</button> 
-	 		<button type="submit" id="btnSave" onclick="bookSave()" class="btn btn-primary" style="display:none;" >도서저장</button> 
+	 		<button type="submit" id="btnSave" onclick="bookSave()" class="btn btn-primary" style="display:none;">도서저장</button> 
 	 		<button type="reset" id="btnCancle" onclick="bookCancle()" class="btn btn-info" style="display:none;">수정취소</button>
  		</c:if> 
     </div>
@@ -145,6 +144,7 @@
 * ready fun 호출
 *=============================================*/
 $(document).ready(function(){
+	$("#page").val(0);
 	getStar();
 });
 
@@ -294,7 +294,7 @@ function saveStarAfter(data){
 	}
 	//도서저장
 	function bookSave(){
-		//document.querySelector("#uploadForm") 폼태그의 요소가져오기 
+		//document.querySelector("#uploadForm")// 폼태그의 요소가져오기 
 		document.querySelector("#uploadForm").submit();
 	}
 	function bookCancle(){
