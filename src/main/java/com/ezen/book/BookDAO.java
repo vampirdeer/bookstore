@@ -26,7 +26,7 @@ public class BookDAO {
 		ResultSet rs=null;
 		//최신 등록 도서부터 가지고 오기
 		String sql="select bno,title,writer,price,publisher,regdate "
-				+ "from booktbl order by regdate desc";
+				+ "from booktbl where disp='y' order by regdate desc";
 		try {
 			pstmt=conn.prepareStatement(sql);
 			rs=pstmt.executeQuery();
@@ -53,7 +53,7 @@ public class BookDAO {
 		Connection conn=JDBCUtil.getConnection();
 		PreparedStatement pstmt=null;
 		ResultSet rs=null;
-		String sql="select count(*) from booktbl";
+		String sql="select count(*) from booktbl where disp='y' ";
 		try {
 			pstmt=conn.prepareStatement(sql);
 			rs=pstmt.executeQuery();
@@ -83,7 +83,7 @@ public class BookDAO {
 		StringBuilder sb=new StringBuilder();
 		sb.append("select * from (");
 		sb.append("select rownum rn, A.* from");
-		sb.append("(select bno,title,writer,price,publisher,regdate from booktbl order by bno desc) A");
+		sb.append("(select bno,title,writer,price,publisher,regdate from booktbl where disp='y' order by bno desc) A");
 		sb.append(" where rownum<=?");
 		sb.append(") where rn>=?");
 		System.out.println(sb.toString());
@@ -120,7 +120,7 @@ public class BookDAO {
 		sb.append("(select bno,title,writer,price,publisher,regdate from booktbl");
 		sb.append(" where ");
 		sb.append(searchtype);
-		sb.append(" like ? order by bno desc) A");//최신순 정렬
+		sb.append(" like ? and disp='y' order by bno desc) A");//최신순 정렬
 		sb.append(" where rownum<=?");
 		sb.append(") where rn>=?");
 		System.out.println(sb.toString());
@@ -153,7 +153,7 @@ public class BookDAO {
 		PreparedStatement pstmt=null;
 		ResultSet rs=null;
 		//select count(*) from booktbl where title like '%자유%'
-		String sql="select count(*) from booktbl where "+searchtype+" like ?";
+		String sql="select count(*) from booktbl where "+searchtype+" like ? and  disp='y' ";
 		try {
 			pstmt=conn.prepareStatement(sql);
 			pstmt.setString(1, "%"+searchword+"%");
@@ -199,7 +199,7 @@ public class BookDAO {
 		PreparedStatement pstmt=null;
 		ResultSet rs=null;
 		try {
-			pstmt=conn.prepareStatement("select * from booktbl where bno=?");
+			pstmt=conn.prepareStatement("select * from booktbl where bno=? and disp='y' ");
 			pstmt.setInt(1, bno);
 			rs=pstmt.executeQuery();
 			if(rs.next()) {
@@ -263,7 +263,8 @@ public class BookDAO {
 		Connection conn=JDBCUtil.getConnection();
 		PreparedStatement pstmt=null;
 		try {
-			pstmt=conn.prepareStatement("delete from booktbl where bno=?");
+			//pstmt=conn.prepareStatement("delete from booktbl where bno=?");
+			pstmt=conn.prepareStatement("update booktbl set disp='n' where bno=?");
 			pstmt.setInt(1, bno);
 			result=pstmt.executeUpdate();
 		} catch (SQLException e) {
