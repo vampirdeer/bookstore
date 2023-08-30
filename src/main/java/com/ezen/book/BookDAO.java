@@ -189,6 +189,8 @@ public class BookDAO {
 			result=pstmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}finally {
+			JDBCUtil.close(conn, pstmt);
 		}
 		return result;
 	}
